@@ -1,0 +1,1203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ÉTÈ ml · World Model · 几何资产</title>
+<meta name="description" content="ÉTÈ world-modelling workbench: geometric assets that carry governance, tested by set membership, closed as a sim to real to sim loop. 几何资产 · 从部署到采集的闭环。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#ffffff;
+  --panel:#fcfcfb;
+  --ink:#141416;
+  --soft:#55555a;
+  --faint:#8a8a8e;
+  --hairline:#e3e1dc;
+  --violet:#8a1fb8;
+  --magenta:#c53fd6;
+  --green:#5d8f66;
+  --green-soft:#eaf1e6;
+  --cream:#f4efe0;
+  --serif:'Times New Roman','Noto Serif SC',Times,serif;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{height:100%;}
+body{
+  background:var(--paper);color:var(--ink);
+  font-family:var(--serif);font-size:15px;line-height:1.55;
+  -webkit-font-smoothing:antialiased;overflow:hidden;
+}
+body[data-lang="zh"]{letter-spacing:.01em;}
+::selection{background:var(--magenta);color:#fff;}
+button,input,select,textarea{font-family:var(--serif);color:inherit;}
+em,i{font-style:italic;color:var(--violet);}
+
+.lab{
+  font-family:var(--serif);font-size:9.5px;letter-spacing:.19em;
+  text-transform:uppercase;color:var(--faint);
+}
+body[data-lang="zh"] .lab{letter-spacing:.09em;}
+
+/* ── frame ── */
+#app{display:grid;grid-template-rows:54px 1fr 104px;height:100vh;}
+
+header{
+  display:flex;align-items:center;gap:18px;padding:0 20px;
+  border-bottom:1px solid var(--hairline);background:rgba(255,255,255,.94);
+}
+header .mark{font-size:21px;letter-spacing:.02em;white-space:nowrap;}
+header .mark i{font-style:italic;color:var(--violet);}
+header .sub{font-size:10px;letter-spacing:.17em;text-transform:uppercase;color:var(--faint);white-space:nowrap;}
+body[data-lang="zh"] header .sub{letter-spacing:.07em;}
+header .spring{flex:1;}
+.chip{
+  border:1px solid var(--hairline);background:#fff;border-radius:5px;
+  padding:6px 12px;font-size:10px;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--soft);cursor:pointer;text-decoration:none;white-space:nowrap;
+}
+.chip:hover{border-color:var(--ink);color:var(--ink);}
+.chip.on{background:var(--ink);border-color:var(--ink);color:#fff;}
+body[data-lang="zh"] .chip{letter-spacing:.06em;}
+
+main{display:grid;grid-template-columns:290px 1fr 336px;min-height:0;}
+.col{overflow-y:auto;overflow-x:hidden;background:var(--panel);scrollbar-width:thin;}
+.col.left{border-right:1px solid var(--hairline);}
+.col.right{border-left:1px solid var(--hairline);background:#fff;}
+.col::-webkit-scrollbar{width:5px;}
+.col::-webkit-scrollbar-thumb{background:#dcd9d2;border-radius:3px;}
+
+.blk{padding:15px 16px;border-bottom:1px solid var(--hairline);}
+.blk h3{font-size:10px;letter-spacing:.19em;text-transform:uppercase;color:var(--violet);font-weight:400;margin-bottom:10px;}
+body[data-lang="zh"] .blk h3{letter-spacing:.08em;}
+.blk p.hint{font-size:12px;color:var(--soft);line-height:1.6;}
+
+/* ── asset library ── */
+.lib{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+.lib button{
+  border:1px solid var(--hairline);background:#fff;border-radius:6px;
+  padding:9px 8px 10px;cursor:pointer;text-align:left;transition:border-color .15s;
+}
+.lib button:hover{border-color:var(--ink);}
+.lib button .gl{display:block;height:22px;margin-bottom:6px;}
+.lib button .nm{display:block;font-size:12.5px;line-height:1.25;}
+.lib button .cls{display:block;font-size:9px;letter-spacing:.09em;color:var(--faint);margin-top:3px;text-transform:none;}
+
+/* ── clause compiler ── */
+textarea.clause{
+  width:100%;border:1px solid var(--hairline);border-radius:6px;background:#fff;
+  padding:9px 10px;font-size:13px;line-height:1.55;resize:vertical;min-height:66px;
+}
+textarea.clause:focus{outline:none;border-color:var(--violet);}
+.row{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;}
+.btn{
+  border:1px solid var(--hairline);background:#fff;border-radius:6px;
+  padding:8px 12px;font-size:10px;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--soft);cursor:pointer;transition:.15s;
+}
+.btn:hover{border-color:var(--ink);color:var(--ink);}
+.btn.solid{background:var(--ink);border-color:var(--ink);color:#fff;}
+.btn.solid:hover{background:var(--violet);border-color:var(--violet);}
+.btn.wide{flex:1;text-align:center;}
+body[data-lang="zh"] .btn{letter-spacing:.05em;}
+.ir{
+  margin-top:9px;border:1px solid var(--hairline);border-left:2px solid var(--magenta);
+  border-radius:0 5px 5px 0;background:#fff;padding:8px 11px;font-size:11.5px;
+  line-height:1.75;color:var(--soft);white-space:pre-wrap;word-break:break-word;
+}
+.ir b{color:var(--ink);font-weight:400;}
+
+/* ── scene ── */
+.stage{position:relative;background:#fff;min-width:0;overflow:hidden;}
+#scene{display:block;width:100%;height:100%;cursor:grab;}
+.stage.dragging #scene{cursor:grabbing;}
+.hud{position:absolute;pointer-events:none;font-size:10px;letter-spacing:.15em;
+  text-transform:uppercase;color:var(--faint);line-height:1.95;}
+body[data-lang="zh"] .hud{letter-spacing:.06em;}
+.hud.tl{top:14px;left:16px;}
+.hud.bl{bottom:14px;left:16px;}
+.hud i{font-style:normal;color:var(--violet);}
+.verdict{
+  position:absolute;top:14px;right:16px;border:1px solid var(--ink);background:#fff;
+  border-radius:6px;padding:9px 13px;min-width:186px;
+}
+.verdict .st{font-size:15px;letter-spacing:.05em;}
+.verdict .st.halt{color:var(--magenta);}
+.verdict .mt{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);margin-top:3px;}
+body[data-lang="zh"] .verdict .mt{letter-spacing:.05em;}
+.verdict .bar{height:2px;background:var(--green);margin-top:7px;transition:background .2s;}
+.verdict.halt .bar{background:var(--magenta);}
+.legend{
+  position:absolute;bottom:14px;right:16px;display:flex;flex-direction:column;gap:4px;
+  font-size:10.5px;color:var(--soft);pointer-events:none;
+}
+.legend span{display:flex;align-items:center;gap:7px;}
+.legend .sw{width:11px;height:11px;border-radius:2px;border:1px solid var(--hairline);}
+
+/* ── right column ── */
+.tabs{display:flex;border-bottom:1px solid var(--hairline);}
+.tabs button{
+  flex:1;border:none;background:none;padding:12px 4px;cursor:pointer;
+  font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);
+  border-bottom:1px solid transparent;margin-bottom:-1px;
+}
+.tabs button.on{color:var(--ink);border-bottom-color:var(--violet);}
+body[data-lang="zh"] .tabs button{letter-spacing:.05em;}
+.pane{display:none;}
+.pane.on{display:block;}
+
+dl.props{display:grid;grid-template-columns:96px 1fr;gap:5px 12px;font-size:12px;}
+dl.props dt{font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);padding-top:2px;}
+body[data-lang="zh"] dl.props dt{letter-spacing:.05em;}
+dl.props dd{color:var(--ink);word-break:break-word;}
+dl.props dd.v{color:var(--violet);}
+.slide{display:flex;align-items:center;gap:9px;margin-top:7px;font-size:11.5px;color:var(--soft);}
+.slide input[type=range]{flex:1;accent-color:var(--violet);}
+pre.code{
+  background:#fff;border:1px solid var(--hairline);border-radius:5px;padding:10px 11px;
+  font-size:10.5px;line-height:1.7;color:var(--soft);white-space:pre-wrap;word-break:break-all;
+  max-height:210px;overflow:auto;
+}
+pre.code .k{color:var(--ink);}
+pre.code .v{color:var(--violet);}
+
+.chain{max-height:330px;overflow:auto;border:1px solid var(--hairline);border-radius:6px;background:#fff;}
+.rec{display:grid;grid-template-columns:30px 1fr auto;gap:9px;padding:7px 10px;
+  border-bottom:1px solid var(--hairline);font-size:11px;align-items:baseline;}
+.rec:last-child{border-bottom:none;}
+.rec .n{color:var(--faint);}
+.rec .d{color:var(--green);}
+.rec .d.halt{color:var(--magenta);}
+.rec .d.held{color:var(--violet);}
+.rec .h{color:var(--faint);font-size:10px;}
+.empty{padding:16px;font-size:12px;color:var(--soft);}
+
+/* ── loop strip ── */
+footer{
+  background:var(--cream);border-top:1px solid #e5dcc4;
+  display:flex;align-items:center;gap:0;padding:0 8px;overflow-x:auto;
+}
+.stage-btn{
+  flex:1;min-width:150px;border:none;background:none;cursor:pointer;text-align:left;
+  padding:14px 14px;border-right:1px solid rgba(20,20,22,.09);position:relative;
+}
+.stage-btn:last-of-type{border-right:none;}
+.stage-btn .no{font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;color:#a99f83;}
+.stage-btn .ti{font-size:15px;margin-top:2px;line-height:1.2;}
+.stage-btn .de{font-size:11px;color:#7a7364;line-height:1.45;margin-top:2px;}
+.stage-btn.on .no{color:var(--violet);}
+.stage-btn.on .ti{color:var(--ink);}
+.stage-btn.on::after{
+  content:"";position:absolute;left:14px;right:14px;bottom:8px;height:2px;background:var(--violet);
+}
+.stage-btn:hover .ti{color:var(--violet);}
+.loopwrap{display:flex;align-items:center;gap:12px;padding:0 16px 0 10px;border-left:1px solid rgba(20,20,22,.09);}
+#loopring{display:block;}
+.loopwrap .cap{font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:#8c8471;line-height:1.9;}
+body[data-lang="zh"] .loopwrap .cap{letter-spacing:.05em;}
+.loopwrap .cap b{font-weight:400;color:var(--violet);}
+
+#boot{
+  position:fixed;inset:0;background:#fff;display:flex;align-items:center;justify-content:center;
+  z-index:90;font-size:13px;color:var(--soft);text-align:center;padding:30px;
+}
+#boot.off{display:none;}
+
+@media(max-width:1080px){
+  body{overflow:auto;}
+  #app{grid-template-rows:54px auto auto;height:auto;}
+  main{grid-template-columns:1fr;}
+  .stage{height:56vh;min-height:380px;order:-1;}
+  .col{max-height:none;overflow:visible;}
+  .col.left{border-right:none;border-bottom:1px solid var(--hairline);}
+  .col.right{border-left:none;border-top:1px solid var(--hairline);}
+  footer{flex-wrap:wrap;}
+  .stage-btn{min-width:47%;}
+  .loopwrap{width:100%;border-left:none;border-top:1px solid rgba(20,20,22,.09);padding:10px 6px;}
+}
+@media(prefers-reduced-motion:reduce){*{animation:none !important;}}
+</style>
+</head>
+<body data-lang="en">
+
+<div id="boot">Loading the workbench. If this stays, the 3D library did not load; refresh, or check network access to cdnjs.</div>
+
+<div id="app">
+
+<header>
+  <div class="mark">ÉTÈ <i>ml</i></div>
+  <div class="sub" data-zh="世界模型工作台 · 几何资产">World model workbench · geometric assets</div>
+  <div class="spring"></div>
+  <a class="chip" href="https://github.com/ete-institute/ete-ml" target="_blank" rel="noopener">Repo ↗</a>
+  <a class="chip" href="https://github.com/ete-institute" target="_blank" rel="noopener">Org ↗</a>
+  <button class="chip" id="lang">中文</button>
+</header>
+
+<main>
+
+  <!-- ══ LEFT: assets and clause ══ -->
+  <div class="col left">
+
+    <div class="blk">
+      <h3 data-zh="几何资产库">Asset library</h3>
+      <div class="lib" id="lib"></div>
+      <p class="hint" style="margin-top:10px;" data-zh="每个资产携带自己的类、CRS 与证据分级。放置后拖动即可移动，点击可检视。">Every asset carries its own class, CRS and evidence grade. Drag a placed asset to move it, click it to inspect.</p>
+    </div>
+
+    <div class="blk">
+      <h3 data-zh="条文编译器">Clause compiler</h3>
+      <textarea class="clause" id="clause">Keep autonomous agents within a 15-meter buffer of infrastructure, below 40 m.</textarea>
+      <div class="row">
+        <button class="btn solid wide" id="compile" data-zh="编译为包络 M">Compile to envelope M</button>
+        <button class="btn" id="clauseB" data-zh="示例">Example</button>
+      </div>
+      <div class="ir" id="ir"></div>
+    </div>
+
+    <div class="blk">
+      <h3 data-zh="物理与神经">Physics and neural</h3>
+      <div class="row" style="margin-top:0;">
+        <button class="btn wide on" id="tPhysics" data-zh="物理路径 der">Physics path · der</button>
+        <button class="btn wide" id="tNeural" data-zh="模型提议 att">Model proposal · att</button>
+      </div>
+      <p class="hint" style="margin-top:9px;" data-zh="几何由透明代码构建，分级 der，可被任何人重算。模型提议的包络分级 att，在人工签名之前保持“待签”，不参与隶属测试。">Geometry is built by transparent code and graded der, so anyone can recompute it. A model-proposed envelope is graded att and stays held for signature, outside the membership test, until a human signs it.</p>
+    </div>
+
+    <div class="blk">
+      <h3 data-zh="导出">Export</h3>
+      <div class="row" style="margin-top:0;">
+        <button class="btn wide" id="expWorld" data-zh="世界 JSON">World JSON</button>
+        <button class="btn wide" id="expChain" data-zh="证据链 JSON">Evidence JSON</button>
+        <button class="btn wide" id="expPng" data-zh="视图 PNG">View PNG</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ══ CENTRE: the world ══ -->
+  <div class="stage" id="stage">
+    <canvas id="scene"></canvas>
+    <div class="hud tl">
+      <span data-zh="几何资产 · 米制局部 CRS">Geometric assets · local metric CRS</span><br>
+      <i id="hudCount">0</i> <span data-zh="资产">assets</span> ·
+      <i id="hudEnv">0</i> <span data-zh="包络">envelopes</span> ·
+      <i id="hudPts">0</i> <span data-zh="采集点">collected</span>
+    </div>
+    <div class="hud bl">
+      <span data-zh="拖动空处旋转 · 滚轮缩放 · 拖动资产移动">Drag empty space to orbit · scroll to zoom · drag an asset to move it</span>
+    </div>
+    <div class="verdict" id="verdict">
+      <div class="st" id="vSt">—</div>
+      <div class="mt" id="vMt">awaiting agent</div>
+      <div class="bar"></div>
+    </div>
+    <div class="legend">
+      <span><i class="sw" style="background:rgba(160,80,200,.35);border-color:#b98ad4"></i><span data-zh="包络 M · 政策">Envelope M · policy</span></span>
+      <span><i class="sw" style="background:#2b2b2e;border-color:#2b2b2e"></i><span data-zh="参照基础设施">Reference infrastructure</span></span>
+      <span><i class="sw" style="background:#c53fd6;border-color:#c53fd6"></i><span data-zh="智能体 P(t)">Agent P(t)</span></span>
+      <span><i class="sw" style="background:#5d8f66;border-color:#5d8f66"></i><span data-zh="采集位姿">Collected poses</span></span>
+    </div>
+  </div>
+
+  <!-- ══ RIGHT: inspector, chain, triples ══ -->
+  <div class="col right">
+    <div class="tabs">
+      <button class="on" data-pane="insp" data-zh="检视">Inspector</button>
+      <button data-pane="chain" data-zh="证据链">Evidence</button>
+      <button data-pane="ttl" data-zh="三元组">Turtle</button>
+    </div>
+
+    <div class="pane on" id="p-insp">
+      <div class="blk" id="inspBody">
+        <p class="hint" data-zh="选择一个几何资产以检视其属性。">Select a geometric asset to inspect its properties.</p>
+      </div>
+    </div>
+
+    <div class="pane" id="p-chain">
+      <div class="blk">
+        <h3 data-zh="哈希链接记录">Hash-linked records</h3>
+        <div class="chain" id="chain"><div class="empty" data-zh="运行智能体后，每次判定变化都会写入一条记录。">Run the agent; every change of verdict writes one record here.</div></div>
+        <div class="row">
+          <button class="btn wide" id="chainClear" data-zh="清空链">Clear chain</button>
+          <button class="btn wide" id="chainVerify" data-zh="重算校验">Recompute chain</button>
+        </div>
+        <p class="hint" id="verifyOut" style="margin-top:8px;"></p>
+      </div>
+    </div>
+
+    <div class="pane" id="p-ttl">
+      <div class="blk">
+        <h3 data-zh="ete: 三元组">ete: triples</h3>
+        <pre class="code" id="ttl">Select an asset to read its triples.</pre>
+        <div class="row"><button class="btn wide" id="copyTtl" data-zh="复制 Turtle">Copy Turtle</button></div>
+      </div>
+      <div class="blk">
+        <h3 data-zh="WKT 预览">WKT preview</h3>
+        <pre class="code" id="wkt">—</pre>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<!-- ══ FOOTER: the loop ══ -->
+<footer>
+  <button class="stage-btn on" data-stage="sim">
+    <div class="no">01 · SIM</div>
+    <div class="ti" data-zh="仿真训练">Simulate</div>
+    <div class="de" data-zh="物理规律驱动的确定路径">A deterministic path, driven by physical rules</div>
+  </button>
+  <button class="stage-btn" data-stage="deploy">
+    <div class="no">02 · REAL</div>
+    <div class="ti" data-zh="部署">Deploy</div>
+    <div class="de" data-zh="真实业务场景，带测量噪声">Real business conditions, with measurement noise</div>
+  </button>
+  <button class="stage-btn" data-stage="collect">
+    <div class="no">03 · REAL</div>
+    <div class="ti" data-zh="采集">Collect</div>
+    <div class="de" data-zh="带后果标签的位姿进入采集集">Poses land in the set, each with its outcome</div>
+  </button>
+  <button class="stage-btn" data-stage="compile">
+    <div class="no">04 · SIM</div>
+    <div class="ti" data-zh="回编译">Compile back</div>
+    <div class="de" data-zh="采集集编译为新的几何资产 M′">The set compiles into a new asset, M′</div>
+  </button>
+  <div class="loopwrap">
+    <canvas id="loopring" width="132" height="132" style="width:66px;height:66px;"></canvas>
+    <div class="cap">
+      <span data-zh="从部署到采集的闭环">Deployment to collection, closed</span><br>
+      <b>sim → real → sim</b><br>
+      <span id="loopNote" data-zh="等待第一次回编译">awaiting first compile back</span>
+    </div>
+  </div>
+</footer>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(function(){
+"use strict";
+if(typeof THREE === 'undefined') return;
+document.getElementById('boot').classList.add('off');
+
+var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ══════════ language ══════════ */
+var lang = 'en';
+var langBtn = document.getElementById('lang');
+function applyLang(){
+  document.body.setAttribute('data-lang', lang);
+  document.documentElement.lang = lang === 'zh' ? 'zh-CN' : 'en';
+  langBtn.textContent = lang === 'zh' ? 'EN' : '中文';
+  document.querySelectorAll('[data-zh]').forEach(function(el){
+    if(el.dataset.en === undefined) el.dataset.en = el.textContent;
+    el.textContent = lang === 'zh' ? el.dataset.zh : el.dataset.en;
+  });
+  renderLib(); paintInspector(); paintChain(); paintVerdict(true); paintLoopNote();
+}
+langBtn.addEventListener('click', function(){ lang = (lang === 'zh' ? 'en' : 'zh'); applyLang(); });
+function T(en, zh){ return lang === 'zh' ? zh : en; }
+
+/* ══════════ scene ══════════ */
+var canvas = document.getElementById('scene');
+var stageEl = document.getElementById('stage');
+var renderer = new THREE.WebGLRenderer({canvas:canvas, antialias:true, preserveDrawingBuffer:true});
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+var scene = new THREE.Scene();
+scene.background = new THREE.Color(0xffffff);
+var camera = new THREE.PerspectiveCamera(34, 1, 0.5, 600);
+
+scene.add(new THREE.HemisphereLight(0xffffff, 0xe8e6e0, 0.95));
+var key = new THREE.DirectionalLight(0xffffff, 0.5); key.position.set(30, 60, 34); scene.add(key);
+var fill = new THREE.DirectionalLight(0xf2f4ee, 0.22); fill.position.set(-34, 22, -26); scene.add(fill);
+
+var world = new THREE.Group(); scene.add(world);
+
+/* ── terrain: a soft green ground carrying the assets ── */
+var MOUNDS = [[-16,-9,2.4,11],[13,7,1.9,13],[3,-14,1.5,9],[-8,13,1.2,10],[20,-4,1.0,8]];
+function terrainH(x, z){
+  var h = 0.15;
+  for(var i=0;i<MOUNDS.length;i++){
+    var m = MOUNDS[i], dx = x-m[0], dz = z-m[1];
+    h += m[2]*Math.exp(-(dx*dx+dz*dz)/(2*m[3]*m[3]));
+  }
+  return h;
+}
+var TW = 74, TD = 54;
+(function buildTerrain(){
+  var g = new THREE.PlaneGeometry(TW, TD, 92, 68); g.rotateX(-Math.PI/2);
+  var pos = g.attributes.position, n = pos.count, cols = new Float32Array(n*3);
+  var hmax = 3.2;
+  for(var i=0;i<n;i++){
+    var x = pos.getX(i), z = pos.getZ(i), h = terrainH(x, z);
+    pos.setY(i, h);
+    var t = Math.min(1, h/hmax);
+    cols[i*3]   = 0.945 - 0.60*t;
+    cols[i*3+1] = 0.960 - 0.40*t;
+    cols[i*3+2] = 0.930 - 0.58*t;
+  }
+  g.setAttribute('color', new THREE.BufferAttribute(cols, 3));
+  g.computeVertexNormals();
+  world.add(new THREE.Mesh(g, new THREE.MeshLambertMaterial({vertexColors:true})));
+  var base = new THREE.Mesh(new THREE.BoxGeometry(TW, 1.1, TD),
+    new THREE.MeshPhongMaterial({color:0xf0ead9, shininess:8}));
+  base.position.y = -0.55; world.add(base);
+  var edge = new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(TW, 1.1, TD)),
+    new THREE.LineBasicMaterial({color:0xd9d2bd}));
+  edge.position.y = -0.55; world.add(edge);
+})();
+
+/* metric grid, 10 m */
+(function grid(){
+  var pts = [];
+  for(var x=-30;x<=30;x+=10){ for(var z=-24;z<=24;z+=1.5){
+    pts.push(x, terrainH(x,z)+0.03, z, x, terrainH(x,z+0.7)+0.03, z+0.7); } }
+  for(var z2=-20;z2<=20;z2+=10){ for(var x2=-32;x2<=32;x2+=1.5){
+    pts.push(x2, terrainH(x2,z2)+0.03, z2, x2+0.7, terrainH(x2+0.7,z2)+0.03, z2); } }
+  var g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute(pts, 3));
+  world.add(new THREE.LineSegments(g, new THREE.LineBasicMaterial({color:0x141416, transparent:true, opacity:0.13})));
+})();
+
+/* ══════════ asset model ══════════ */
+var ASSETS = [], SEQ = 0, selected = null;
+var MAT = {
+  envelope: function(){ return new THREE.MeshPhongMaterial({color:0xa050c8, transparent:true, opacity:0.17,
+    shininess:80, specular:0xffffff, side:THREE.DoubleSide, depthWrite:false}); },
+  proposed: function(){ return new THREE.MeshPhongMaterial({color:0x8a1fb8, transparent:true, opacity:0.09,
+    shininess:60, side:THREE.DoubleSide, depthWrite:false}); },
+  infra: function(){ return new THREE.MeshPhongMaterial({color:0x24242a, shininess:26, specular:0x6c6c74}); },
+  corridor: function(){ return new THREE.MeshPhongMaterial({color:0x7fae86, transparent:true, opacity:0.42,
+    shininess:50, side:THREE.DoubleSide, depthWrite:false}); },
+  sensor: function(){ return new THREE.MeshPhongMaterial({color:0xf1eee6, shininess:50, specular:0xffffff}); },
+  mound: function(){ return new THREE.MeshPhongMaterial({color:0x9dbd9f, shininess:12}); }
+};
+
+var KINDS = {
+  envelope:{ en:'Envelope M', zh:'包络 M', cls:'ete:Envelope' },
+  infra:{ en:'Infrastructure', zh:'基础设施', cls:'ete:GovernedObject' },
+  corridor:{ en:'Corridor', zh:'走廊', cls:'ete:GovernanceGeometry' },
+  sensor:{ en:'Sensor node', zh:'传感节点', cls:'ete:GovernedObject' },
+  mound:{ en:'Terrain patch', zh:'地形块', cls:'geo:Feature' },
+  agent:{ en:'Agent', zh:'智能体', cls:'ete:Agent' }
+};
+
+function glyph(kind){
+  if(kind === 'envelope') return '<svg class="gl" viewBox="0 0 40 22"><rect x="6" y="4" width="28" height="14" fill="rgba(160,80,200,.16)" stroke="#8a1fb8"/><circle cx="20" cy="11" r="1.8" fill="#c53fd6"/></svg>';
+  if(kind === 'infra') return '<svg class="gl" viewBox="0 0 40 22"><rect x="10" y="7" width="9" height="11" fill="#24242a"/><rect x="21" y="3" width="9" height="15" fill="#24242a"/></svg>';
+  if(kind === 'corridor') return '<svg class="gl" viewBox="0 0 40 22"><path d="M4 16 C14 4, 26 20, 36 7" fill="none" stroke="#5d8f66" stroke-width="4" opacity=".5"/></svg>';
+  if(kind === 'sensor') return '<svg class="gl" viewBox="0 0 40 22"><circle cx="20" cy="12" r="4" fill="none" stroke="#141416"/><path d="M20 8 V3 M20 16 V20 M16 12 H11 M24 12 H29" stroke="#8a1fb8"/></svg>';
+  return '<svg class="gl" viewBox="0 0 40 22"><path d="M4 19 Q14 5 22 15 Q28 21 36 12" fill="none" stroke="#5d8f66" stroke-width="2"/></svg>';
+}
+
+function renderLib(){
+  var lib = document.getElementById('lib');
+  lib.innerHTML = '';
+  ['envelope','infra','corridor','sensor','mound'].forEach(function(k){
+    var b = document.createElement('button');
+    b.innerHTML = glyph(k) +
+      '<span class="nm">' + T(KINDS[k].en, KINDS[k].zh) + '</span>' +
+      '<span class="cls">' + KINDS[k].cls + '</span>';
+    b.addEventListener('click', function(){ addAsset(k); });
+    lib.appendChild(b);
+  });
+}
+
+function boxEdges(w, h, d, color){
+  return new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(w, h, d)),
+    new THREE.LineBasicMaterial({color:color}));
+}
+
+function addAsset(kind, opts){
+  opts = opts || {};
+  SEQ++;
+  var id = kind + '-' + String(SEQ).padStart(2, '0');
+  var a = {
+    id:id, kind:kind, grade:opts.grade || 'der',
+    polarity: kind === 'envelope' ? (opts.polarity || 'inclusive') : null,
+    signed:false, note:opts.note || '',
+    half:{x:6, y:4, z:6}, rotY:0, group:new THREE.Group(), parts:{}
+  };
+  var px = opts.x !== undefined ? opts.x : (Math.random()*2-1)*11;
+  var pz = opts.z !== undefined ? opts.z : (Math.random()*2-1)*9;
+
+  if(kind === 'envelope'){
+    a.half = opts.half || {x:8, y:5, z:8};
+    var mat = a.grade === 'att' ? MAT.proposed() : MAT.envelope();
+    var m = new THREE.Mesh(new THREE.BoxGeometry(a.half.x*2, a.half.y*2, a.half.z*2), mat);
+    var e = boxEdges(a.half.x*2, a.half.y*2, a.half.z*2, a.grade === 'att' ? 0x8a1fb8 : 0xb377d6);
+    if(a.grade === 'att'){ e.material.transparent = true; e.material.opacity = 0.55; }
+    a.group.add(m); a.group.add(e); a.parts.body = m; a.parts.edge = e;
+    a.group.position.set(px, terrainH(px, pz) + a.half.y, pz);
+  }
+  else if(kind === 'infra'){
+    a.half = opts.half || {x:3.2, y:3.4, z:3.2};
+    var b = new THREE.Mesh(new THREE.BoxGeometry(a.half.x*2, a.half.y*2, a.half.z*2), MAT.infra());
+    var be = boxEdges(a.half.x*2, a.half.y*2, a.half.z*2, 0x55555a);
+    a.group.add(b); a.group.add(be); a.parts.body = b; a.parts.edge = be;
+    a.group.position.set(px, terrainH(px, pz) + a.half.y, pz);
+  }
+  else if(kind === 'corridor'){
+    a.half = {x:14, y:0.9, z:2.2};
+    var pts = [];
+    for(var i=0;i<=40;i++){
+      var t = i/40, cx = -14 + 28*t, cz = Math.sin(t*Math.PI*1.4)*6;
+      pts.push(new THREE.Vector3(cx, 6 + Math.sin(t*Math.PI)*2.2, cz));
+    }
+    var curve = new THREE.CatmullRomCurve3(pts);
+    var tube = new THREE.Mesh(new THREE.TubeGeometry(curve, 60, 1.5, 10, false), MAT.corridor());
+    a.group.add(tube); a.parts.body = tube;
+    a.group.position.set(px*0.3, 0, pz*0.3);
+    a.curve = curve;
+  }
+  else if(kind === 'sensor'){
+    a.half = {x:0.8, y:0.8, z:0.8};
+    var s = new THREE.Mesh(new THREE.IcosahedronGeometry(0.8, 0), MAT.sensor());
+    var se = new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.IcosahedronGeometry(0.8, 0)),
+      new THREE.LineBasicMaterial({color:0x8a1fb8}));
+    var mast = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, 3.2, 8), MAT.sensor());
+    mast.position.y = -1.9;
+    a.group.add(s); a.group.add(se); a.group.add(mast); a.parts.body = s; a.parts.edge = se;
+    a.group.position.set(px, terrainH(px, pz) + 2.6, pz);
+  }
+  else {
+    a.half = {x:4, y:1.4, z:4};
+    var mm = new THREE.Mesh(new THREE.SphereGeometry(4, 26, 16, 0, Math.PI*2, 0, Math.PI/2), MAT.mound());
+    mm.scale.y = 0.35;
+    a.group.add(mm); a.parts.body = mm;
+    a.group.position.set(px, terrainH(px, pz), pz);
+  }
+
+  a.group.rotation.y = a.rotY;
+  a.group.userData.asset = a;
+  world.add(a.group);
+  ASSETS.push(a);
+  select(a);
+  updateHud();
+  return a;
+}
+
+function removeAsset(a){
+  world.remove(a.group);
+  ASSETS = ASSETS.filter(function(x){ return x !== a; });
+  if(selected === a) select(null);
+  updateHud();
+}
+
+/* ══════════ the agent: neuron geometry ══════════ */
+var agent = new THREE.Group();
+(function buildAgent(){
+  var core = new THREE.Mesh(new THREE.SphereGeometry(0.62, 26, 18),
+    new THREE.MeshPhongMaterial({color:0xc53fd6, shininess:70, specular:0xffffff}));
+  agent.add(core); agent.userData.core = core;
+  var dend = [];
+  for(var i=0;i<7;i++){
+    var a1 = (i/7)*Math.PI*2, l = 0.9 + (i%3)*0.34;
+    var rod = new THREE.Mesh(new THREE.BoxGeometry(l, 0.055, 0.055),
+      new THREE.MeshPhongMaterial({color:0x8a1fb8, shininess:60}));
+    rod.position.set(Math.cos(a1)*l/2, Math.sin(i*1.7)*0.42, Math.sin(a1)*l/2);
+    rod.rotation.y = -a1; rod.rotation.z = Math.sin(i*2.1)*0.4;
+    var tip = new THREE.Mesh(new THREE.SphereGeometry(0.11, 10, 8),
+      new THREE.MeshPhongMaterial({color:0x8a1fb8, shininess:60}));
+    tip.position.set(Math.cos(a1)*l, Math.sin(i*1.7)*0.7, Math.sin(a1)*l);
+    agent.add(rod); agent.add(tip); dend.push(rod, tip);
+  }
+  agent.userData.dend = dend;
+  world.add(agent);
+})();
+var trail = (function(){
+  var N = 220, g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.BufferAttribute(new Float32Array(N*3), 3));
+  g.setDrawRange(0, 0);
+  var l = new THREE.Line(g, new THREE.LineBasicMaterial({color:0xc53fd6, transparent:true, opacity:0.45}));
+  world.add(l);
+  return {line:l, geo:g, n:0, max:N};
+})();
+
+/* collected poses */
+var collected = [];
+var collGeo = new THREE.BufferGeometry();
+collGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(4000*3), 3));
+collGeo.setAttribute('color', new THREE.BufferAttribute(new Float32Array(4000*3), 3));
+collGeo.setDrawRange(0, 0);
+world.add(new THREE.Points(collGeo, new THREE.PointsMaterial({size:0.42, vertexColors:true})));
+
+/* ══════════ membership ══════════ */
+var _v = new THREE.Vector3();
+function insideAsset(a, p){
+  _v.copy(p).sub(a.group.position);
+  var c = Math.cos(-a.rotY), s = Math.sin(-a.rotY);
+  var x = _v.x*c - _v.z*s, z = _v.x*s + _v.z*c;
+  return Math.abs(x) <= a.half.x && Math.abs(_v.y) <= a.half.y && Math.abs(z) <= a.half.z;
+}
+function testMembership(p){
+  var envs = ASSETS.filter(function(a){
+    return a.kind === 'envelope' && (a.grade === 'der' || a.signed);
+  });
+  var held = ASSETS.some(function(a){ return a.kind === 'envelope' && a.grade === 'att' && !a.signed; });
+  if(!envs.length) return {deontic:'Unbound', grade:'der', held:held, envelope:null, inside:null};
+  for(var i=0;i<envs.length;i++){
+    var a = envs[i], inside = insideAsset(a, p);
+    var ok = a.polarity === 'inclusive' ? inside : !inside;
+    if(!ok) return {deontic:'StructuralHalt', grade:a.signed ? 'att' : 'der', held:held, envelope:a.id, inside:inside};
+  }
+  return {deontic:'Permitted', grade:envs.some(function(a){return a.signed;}) ? 'att' : 'der',
+          held:held, envelope:envs[0].id, inside:true};
+}
+
+/* ══════════ evidence chain ══════════ */
+var CHAIN = [], lastDeontic = null, chainHead = 'GENESIS';
+function sha256(str){
+  return crypto.subtle.digest('SHA-256', new TextEncoder().encode(str)).then(function(buf){
+    return Array.prototype.map.call(new Uint8Array(buf), function(b){ return ('0'+b.toString(16)).slice(-2); }).join('');
+  });
+}
+function emit(kind, body){
+  var rec = Object.assign({
+    seq: CHAIN.length + 1,
+    claim_generator: 'ete-ml/0.2 (world-model workbench)',
+    kind: kind,
+    stage: stage,
+    created: new Date().toISOString(),
+    prev: chainHead
+  }, body);
+  rec.hash = 'computing';
+  CHAIN.push(rec);
+  if(CHAIN.length > 400) CHAIN.shift();
+  sha256(rec.prev + '|' + JSON.stringify(body) + '|' + rec.created).then(function(h){
+    rec.hash = h; chainHead = h; paintChain();
+  });
+  paintChain();
+}
+function paintChain(){
+  var el = document.getElementById('chain');
+  if(!CHAIN.length){
+    el.innerHTML = '<div class="empty">' + T('Run the agent; every change of verdict writes one record here.',
+      '运行智能体后，每次判定变化都会写入一条记录。') + '</div>';
+    return;
+  }
+  el.innerHTML = CHAIN.slice(-60).reverse().map(function(r){
+    var cls = r.deontic === 'StructuralHalt' ? 'halt' : (r.deontic === 'HeldForSignature' ? 'held' : '');
+    var d = r.deontic || r.kind;
+    return '<div class="rec"><span class="n">' + String(r.seq).padStart(3,'0') + '</span>' +
+      '<span class="d ' + cls + '">' + d + ' <span style="color:var(--faint)">· ' + r.grade + '</span></span>' +
+      '<span class="h">' + (r.hash === 'computing' ? '…' : r.hash.slice(0,8)) + '</span></div>';
+  }).join('');
+}
+document.getElementById('chainClear').addEventListener('click', function(){
+  CHAIN = []; chainHead = 'GENESIS'; lastDeontic = null;
+  document.getElementById('verifyOut').textContent = ''; paintChain();
+});
+document.getElementById('chainVerify').addEventListener('click', function(){
+  var out = document.getElementById('verifyOut');
+  if(!CHAIN.length){ out.textContent = T('The chain is empty. Run the agent first.', '证据链为空，请先运行智能体。'); return; }
+  var ok = true;
+  for(var i=1;i<CHAIN.length;i++){ if(CHAIN[i].prev !== CHAIN[i-1].hash) ok = false; }
+  out.textContent = ok
+    ? T('Links hold across ' + CHAIN.length + ' records. Anyone with the same inputs recomputes the same head.',
+        '连续 ' + CHAIN.length + ' 条记录的链接成立。任何人用相同输入都能重算出相同链头。')
+    : T('A link is broken. Records were edited or reordered.', '链接断裂，记录被修改或重排。');
+});
+
+/* ══════════ verdict readout ══════════ */
+var current = {deontic:'Unbound', grade:'der', held:false, envelope:null};
+function paintVerdict(quiet){
+  var st = document.getElementById('vSt'), mt = document.getElementById('vMt'), box = document.getElementById('verdict');
+  var names = {
+    Permitted:[ 'PERMITTED', '放行' ],
+    StructuralHalt:[ 'STRUCTURAL HALT', '结构性拦停' ],
+    Unbound:[ 'UNBOUND', '未受约束' ]
+  };
+  var n = names[current.deontic] || ['—','—'];
+  st.textContent = T(n[0], n[1]);
+  var halt = current.deontic === 'StructuralHalt';
+  st.classList.toggle('halt', halt);
+  box.classList.toggle('halt', halt);
+  var bits = [];
+  bits.push(T('grade ', '分级 ') + current.grade);
+  if(current.envelope) bits.push(T('against ', '对照 ') + current.envelope);
+  if(current.held) bits.push(T('1 held for signature', '1 项待签'));
+  mt.textContent = bits.join(' · ');
+}
+
+/* ══════════ stages: sim → real → sim ══════════ */
+var stage = 'sim', tPath = 0, collectTick = 0, loopsClosed = 0;
+document.querySelectorAll('.stage-btn').forEach(function(b){
+  b.addEventListener('click', function(){ setStage(b.dataset.stage); });
+});
+function setStage(s){
+  stage = s;
+  document.querySelectorAll('.stage-btn').forEach(function(b){ b.classList.toggle('on', b.dataset.stage === s); });
+  if(s === 'compile') compileBack();
+}
+function paintLoopNote(){
+  var el = document.getElementById('loopNote');
+  el.textContent = loopsClosed
+    ? T(loopsClosed + ' loop' + (loopsClosed>1?'s':'') + ' closed · ' + collected.length + ' poses',
+        '已闭合 ' + loopsClosed + ' 次 · ' + collected.length + ' 个位姿')
+    : T('awaiting first compile back', '等待第一次回编译');
+}
+
+function pathPoint(t){
+  var r = 15.5 + Math.sin(t*2.0)*2.4;
+  var x = Math.cos(t)*r, z = Math.sin(t)*r*0.72;
+  var y = terrainH(x, z) + 6.4 + Math.sin(t*3.0)*1.5;
+  return new THREE.Vector3(x, y, z);
+}
+function agentPos(t){
+  var p = pathPoint(t);
+  if(stage === 'deploy' || stage === 'collect'){
+    p.x += Math.sin(t*7.3)*1.5 + Math.sin(t*2.1)*1.9;
+    p.z += Math.cos(t*6.1)*1.3 + Math.cos(t*1.7)*1.7;
+    p.y += Math.sin(t*5.5)*0.9;
+  }
+  return p;
+}
+
+function pushCollected(p, permitted){
+  if(collected.length >= 4000) return;
+  collected.push({x:p.x, y:p.y, z:p.z, permitted:permitted});
+  var i = collected.length - 1;
+  var pa = collGeo.attributes.position.array, ca = collGeo.attributes.color.array;
+  pa[i*3] = p.x; pa[i*3+1] = p.y; pa[i*3+2] = p.z;
+  if(permitted){ ca[i*3] = 0.365; ca[i*3+1] = 0.561; ca[i*3+2] = 0.400; }
+  else { ca[i*3] = 0.773; ca[i*3+1] = 0.247; ca[i*3+2] = 0.839; }
+  collGeo.setDrawRange(0, collected.length);
+  collGeo.attributes.position.needsUpdate = true;
+  collGeo.attributes.color.needsUpdate = true;
+  updateHud();
+}
+
+function compileBack(){
+  var pts = collected.filter(function(c){ return c.permitted; });
+  if(pts.length < 30){
+    document.getElementById('loopNote').textContent =
+      T('collect more poses first (' + pts.length + '/30)', '请先采集更多位姿（' + pts.length + '/30）');
+    return;
+  }
+  var mn = {x:1e9,y:1e9,z:1e9}, mx = {x:-1e9,y:-1e9,z:-1e9};
+  pts.forEach(function(c){
+    mn.x = Math.min(mn.x, c.x); mx.x = Math.max(mx.x, c.x);
+    mn.y = Math.min(mn.y, c.y); mx.y = Math.max(mx.y, c.y);
+    mn.z = Math.min(mn.z, c.z); mx.z = Math.max(mx.z, c.z);
+  });
+  var pad = 0.8;
+  var half = {x:(mx.x-mn.x)/2 + pad, y:(mx.y-mn.y)/2 + pad, z:(mx.z-mn.z)/2 + pad};
+  var cx = (mx.x+mn.x)/2, cy = (mx.y+mn.y)/2, cz = (mx.z+mn.z)/2;
+  var a = addAsset('envelope', {half:half, x:cx, z:cz, polarity:'inclusive',
+    note:T('Compiled from ' + pts.length + ' permitted poses collected in deployment.',
+           '由部署中采集的 ' + pts.length + ' 个放行位姿编译而成。')});
+  a.group.position.set(cx, cy, cz);
+  a.derived = true;
+  a.id = 'envelope-M-prime-' + (loopsClosed + 1);
+  loopsClosed++;
+  emit('compile-back', {deontic:'Derived', grade:'der', envelope:a.id, poses:pts.length,
+    half:[+half.x.toFixed(2), +half.y.toFixed(2), +half.z.toFixed(2)]});
+  paintLoopNote(); paintInspector(); updateHud();
+  setTimeout(function(){ setStage('sim'); }, 400);
+}
+
+/* ══════════ clause compiler ══════════ */
+function parseMandate(text){
+  var t = text.toLowerCase().trim();
+  var m = t.match(/(\d+(?:\.\d+)?)\s*-?\s*(?:meter|metre|m)\b/);
+  var distance = m ? parseFloat(m[1]) : 0;
+  var relation, polarity;
+  if(/no-fly|no fly|exclude|prohibit|must not enter|forbidden/.test(t)){ relation = 'exclude'; polarity = 'exclusive'; }
+  else if(/within|buffer of|inside/.test(t)){ relation = 'buffer'; polarity = 'inclusive'; }
+  else if(/setback|at least|away from|clearance|keep|maintain/.test(t)){ relation = 'setback'; polarity = 'exclusive'; }
+  else { relation = 'buffer'; polarity = 'inclusive'; }
+  var ref = t.match(/(?:of|from|around|near|to)\s+([a-z0-9 _-]+?)(?:\.|,|;|$| within| by| at| below| under)/);
+  var reference = ref ? ref[1].trim() : 'reference infrastructure';
+  var subj = t.match(/((?:autonomous |uncrewed )?(?:agents?|drones?|uavs?|vehicles?))/);
+  var subject = subj ? subj[1].trim() : 'autonomous agent';
+  var hm = t.match(/(?:below|under|up to|ceiling of|beneath)\s*(\d+(?:\.\d+)?)\s*(?:meter|metre|m)\b/);
+  return {subject:subject, relation:relation, distance_m:distance, reference:reference,
+          height_min_m:0, height_max_m: hm ? parseFloat(hm[1]) : 50, polarity:polarity, raw:text};
+}
+function paintIR(c){
+  document.getElementById('ir').innerHTML =
+    '<b>constraint</b> subject=' + c.subject + '\n' +
+    '<b>relation</b>=' + c.relation + ' · d=' + c.distance_m + ' m · h≤' + c.height_max_m + ' m\n' +
+    '<b>polarity</b> ' + c.polarity + ' · ref=' + c.reference;
+}
+document.getElementById('compile').addEventListener('click', function(){
+  var c = parseMandate(document.getElementById('clause').value);
+  paintIR(c);
+  var refAsset = null;
+  if(selected && selected.kind === 'infra') refAsset = selected;
+  else refAsset = ASSETS.filter(function(a){ return a.kind === 'infra'; })[0];
+  var base = refAsset ? refAsset.half : {x:3.2, y:3.4, z:3.2};
+  var bx = refAsset ? refAsset.group.position.x : 0;
+  var bz = refAsset ? refAsset.group.position.z : 0;
+  var d = c.distance_m;
+  var half = {x:base.x + d, y:Math.max(1, (c.height_max_m - c.height_min_m)/2), z:base.z + d};
+  var neural = document.getElementById('tNeural').classList.contains('on');
+  var a = addAsset('envelope', {half:half, x:bx, z:bz, polarity:c.polarity,
+    grade: neural ? 'att' : 'der',
+    note: neural
+      ? T('Proposed by a model from the clause. Held for signature; it does not bind the agent until signed.',
+          '由模型依条文提议。待签名，签名前不约束智能体。')
+      : T('Compiled from the clause by transparent code. The buffer is an axis-aligned prism in this build.',
+          '由透明代码依条文编译。本构建中缓冲区为轴对齐棱柱。')});
+  a.group.position.y = (c.height_min_m + c.height_max_m)/2;
+  a.clause = c;
+  emit('clause-compiled', {deontic:'Derived', grade:a.grade, envelope:a.id,
+    relation:c.relation, distance_m:c.distance_m, polarity:c.polarity});
+  paintInspector();
+});
+document.getElementById('clauseB').addEventListener('click', function(){
+  var samples = [
+    'Keep autonomous agents within a 15-meter buffer of infrastructure, below 40 m.',
+    'No-fly zone: exclude drones from a 12-meter perimeter around the substation.',
+    'Maintain a setback of at least 8 meters from the corridor, under 30 m.'
+  ];
+  var ta = document.getElementById('clause');
+  var i = samples.indexOf(ta.value.trim());
+  ta.value = samples[(i + 1) % samples.length];
+});
+
+/* physics / neural toggle */
+document.getElementById('tPhysics').addEventListener('click', function(){
+  this.classList.add('on'); document.getElementById('tNeural').classList.remove('on');
+});
+document.getElementById('tNeural').addEventListener('click', function(){
+  this.classList.add('on'); document.getElementById('tPhysics').classList.remove('on');
+});
+
+/* ══════════ inspector ══════════ */
+function select(a){
+  ASSETS.forEach(function(x){
+    if(x.parts.edge) x.parts.edge.material.color.setHex(
+      x === a ? 0xc53fd6 : (x.kind === 'envelope' ? (x.grade === 'att' ? 0x8a1fb8 : 0xb377d6) : 0x55555a));
+  });
+  selected = a;
+  paintInspector();
+}
+function paintInspector(){
+  var el = document.getElementById('inspBody');
+  if(!selected){
+    el.innerHTML = '<p class="hint">' + T('Select a geometric asset to inspect its properties.', '选择一个几何资产以检视其属性。') + '</p>';
+    document.getElementById('ttl').textContent = T('Select an asset to read its triples.', '选择资产以读取其三元组。');
+    document.getElementById('wkt').textContent = '—';
+    return;
+  }
+  var a = selected, p = a.group.position;
+  var rows = '' +
+    '<dl class="props">' +
+    '<dt>' + T('id','标识') + '</dt><dd>' + a.id + '</dd>' +
+    '<dt>' + T('class','类') + '</dt><dd class="v">' + KINDS[a.kind].cls + '</dd>' +
+    '<dt>' + T('position','位置') + '</dt><dd>' + p.x.toFixed(2) + ', ' + p.y.toFixed(2) + ', ' + p.z.toFixed(2) + ' m</dd>' +
+    '<dt>' + T('half extents','半尺寸') + '</dt><dd>' + a.half.x.toFixed(2) + ', ' + a.half.y.toFixed(2) + ', ' + a.half.z.toFixed(2) + ' m</dd>' +
+    '<dt>' + T('crs','坐标系') + '</dt><dd>EPSG:3857 · local</dd>' +
+    '<dt>' + T('grade','证据分级') + '</dt><dd class="v">' + a.grade + (a.signed ? T(' · signed',' · 已签名') : '') + '</dd>' +
+    (a.polarity ? '<dt>' + T('polarity','极性') + '</dt><dd>' + a.polarity + '</dd>' : '') +
+    '</dl>';
+  if(a.note) rows += '<p class="hint" style="margin-top:9px;">' + a.note + '</p>';
+
+  if(a.kind === 'envelope' || a.kind === 'infra'){
+    rows += '<div class="slide"><span>' + T('width','宽') + '</span><input type="range" id="sX" min="1" max="24" step="0.5" value="' + a.half.x + '"><span id="lX">' + a.half.x.toFixed(1) + '</span></div>';
+    rows += '<div class="slide"><span>' + T('height','高') + '</span><input type="range" id="sY" min="1" max="22" step="0.5" value="' + a.half.y + '"><span id="lY">' + a.half.y.toFixed(1) + '</span></div>';
+    rows += '<div class="slide"><span>' + T('depth','深') + '</span><input type="range" id="sZ" min="1" max="24" step="0.5" value="' + a.half.z + '"><span id="lZ">' + a.half.z.toFixed(1) + '</span></div>';
+    rows += '<div class="slide"><span>' + T('turn','旋转') + '</span><input type="range" id="sR" min="0" max="6.28" step="0.02" value="' + a.rotY + '"><span id="lR">' + (a.rotY*57.3).toFixed(0) + '°</span></div>';
+  }
+  rows += '<div class="row">';
+  if(a.kind === 'envelope'){
+    rows += '<button class="btn" id="flip">' + T('Flip polarity','切换极性') + '</button>';
+    if(a.grade === 'att' && !a.signed) rows += '<button class="btn solid" id="sign">' + T('Sign to bind','签名以生效') + '</button>';
+  }
+  rows += '<button class="btn" id="del">' + T('Remove','移除') + '</button></div>';
+  el.innerHTML = rows;
+
+  ['X','Y','Z'].forEach(function(ax){
+    var s = document.getElementById('s' + ax);
+    if(!s) return;
+    s.addEventListener('input', function(){
+      a.half[ax.toLowerCase()] = parseFloat(s.value);
+      document.getElementById('l' + ax).textContent = parseFloat(s.value).toFixed(1);
+      rebuildBox(a);
+      paintTriples();
+    });
+  });
+  var sr = document.getElementById('sR');
+  if(sr) sr.addEventListener('input', function(){
+    a.rotY = parseFloat(sr.value); a.group.rotation.y = a.rotY;
+    document.getElementById('lR').textContent = (a.rotY*57.3).toFixed(0) + '°';
+    paintTriples();
+  });
+  var fl = document.getElementById('flip');
+  if(fl) fl.addEventListener('click', function(){
+    a.polarity = a.polarity === 'inclusive' ? 'exclusive' : 'inclusive';
+    paintInspector(); paintTriples();
+  });
+  var sg = document.getElementById('sign');
+  if(sg) sg.addEventListener('click', function(){
+    a.signed = true;
+    a.parts.body.material.opacity = 0.17;
+    a.parts.edge.material.opacity = 1;
+    emit('human-signature', {deontic:'Permitted', grade:'att', envelope:a.id, signature:'human'});
+    paintInspector(); paintTriples();
+  });
+  var dl = document.getElementById('del');
+  if(dl) dl.addEventListener('click', function(){ removeAsset(a); });
+  paintTriples();
+}
+function rebuildBox(a){
+  if(!a.parts.body) return;
+  a.parts.body.geometry.dispose();
+  a.parts.body.geometry = new THREE.BoxGeometry(a.half.x*2, a.half.y*2, a.half.z*2);
+  if(a.parts.edge){
+    a.parts.edge.geometry.dispose();
+    a.parts.edge.geometry = new THREE.EdgesGeometry(new THREE.BoxGeometry(a.half.x*2, a.half.y*2, a.half.z*2));
+  }
+}
+function paintTriples(){
+  var a = selected;
+  if(!a) return;
+  var p = a.group.position;
+  var pre = '@prefix ete: <https://www.ete.institute/ns/ete#> .\n@prefix geo: <http://www.opengis.net/ont/geosparql#> .\n\n';
+  var body = 'ete:' + a.id + ' a ' + KINDS[a.kind].cls + ' ;\n' +
+    '  ete:crs "EPSG:3857" ;\n' +
+    '  ete:evidenceGrade "' + a.grade + '" ;\n' +
+    (a.polarity ? '  ete:polarity "' + a.polarity + '" ;\n' : '') +
+    (a.kind === 'envelope' ? '  ete:heightMin ' + (p.y - a.half.y).toFixed(2) + ' ;\n  ete:heightMax ' + (p.y + a.half.y).toFixed(2) + ' ;\n' : '') +
+    (a.signed ? '  ete:hasSignature ete:sig-human ;\n' : '') +
+    '  geo:hasGeometry ete:' + a.id + '-geom .';
+  var el = document.getElementById('ttl');
+  el.innerHTML = (pre + body)
+    .replace(/</g,'&lt;')
+    .replace(/(ete:[a-zA-Z-]+|geo:[a-zA-Z]+)/g, '<span class="k">$1</span>')
+    .replace(/"([^"]*)"/g, '<span class="v">"$1"</span>');
+  var c = Math.cos(a.rotY), s = Math.sin(a.rotY);
+  var corners = [[-a.half.x,-a.half.z],[a.half.x,-a.half.z],[a.half.x,a.half.z],[-a.half.x,a.half.z],[-a.half.x,-a.half.z]];
+  var wkt = corners.map(function(q){
+    var x = p.x + q[0]*c - q[1]*s, z = p.z + q[0]*s + q[1]*c;
+    return x.toFixed(2) + ' ' + z.toFixed(2) + ' ' + (p.y - a.half.y).toFixed(2);
+  }).join(', ');
+  document.getElementById('wkt').textContent =
+    '<http://www.opengis.net/def/crs/EPSG/0/3857>\nPOLYGON Z((' + wkt + '))\n/* extruded ' +
+    (p.y - a.half.y).toFixed(2) + ' .. ' + (p.y + a.half.y).toFixed(2) + ' m */';
+}
+document.getElementById('copyTtl').addEventListener('click', function(){
+  navigator.clipboard.writeText(document.getElementById('ttl').textContent);
+  var b = this, o = b.textContent; b.textContent = T('Copied','已复制');
+  setTimeout(function(){ b.textContent = o; }, 1100);
+});
+
+/* tabs */
+document.querySelectorAll('.tabs button').forEach(function(b){
+  b.addEventListener('click', function(){
+    document.querySelectorAll('.tabs button').forEach(function(x){ x.classList.remove('on'); });
+    document.querySelectorAll('.pane').forEach(function(x){ x.classList.remove('on'); });
+    b.classList.add('on');
+    document.getElementById('p-' + b.dataset.pane).classList.add('on');
+  });
+});
+
+/* ══════════ camera and pointer ══════════ */
+var cam = {theta:0.72, phi:0.92, r:56, tx:0, ty:3, tz:0};
+function placeCamera(){
+  camera.position.set(
+    cam.tx + cam.r*Math.sin(cam.phi)*Math.cos(cam.theta),
+    cam.ty + cam.r*Math.cos(cam.phi),
+    cam.tz + cam.r*Math.sin(cam.phi)*Math.sin(cam.theta));
+  camera.lookAt(cam.tx, cam.ty, cam.tz);
+}
+var ray = new THREE.Raycaster(), ptr = new THREE.Vector2();
+var drag = null, lastX = 0, lastY = 0, dragPlane = new THREE.Plane();
+function pickAsset(ev){
+  var r = canvas.getBoundingClientRect();
+  ptr.set(((ev.clientX - r.left)/r.width)*2 - 1, -((ev.clientY - r.top)/r.height)*2 + 1);
+  ray.setFromCamera(ptr, camera);
+  var meshes = [];
+  ASSETS.forEach(function(a){ a.group.traverse(function(o){ if(o.isMesh) meshes.push(o); }); });
+  var hit = ray.intersectObjects(meshes, false);
+  if(!hit.length) return null;
+  var o = hit[0].object;
+  while(o && !o.userData.asset) o = o.parent;
+  return o ? o.userData.asset : null;
+}
+canvas.addEventListener('pointerdown', function(ev){
+  canvas.setPointerCapture(ev.pointerId);
+  lastX = ev.clientX; lastY = ev.clientY;
+  var a = pickAsset(ev);
+  if(a){
+    select(a);
+    drag = {mode:'asset', asset:a};
+    dragPlane.setFromNormalAndCoplanarPoint(new THREE.Vector3(0,1,0), a.group.position.clone());
+  } else {
+    drag = {mode:'orbit'};
+    stageEl.classList.add('dragging');
+  }
+});
+canvas.addEventListener('pointermove', function(ev){
+  if(!drag) return;
+  if(drag.mode === 'orbit'){
+    cam.theta += (ev.clientX - lastX)*0.006;
+    cam.phi = Math.max(0.18, Math.min(1.42, cam.phi + (ev.clientY - lastY)*0.005));
+    lastX = ev.clientX; lastY = ev.clientY;
+  } else {
+    var r = canvas.getBoundingClientRect();
+    ptr.set(((ev.clientX - r.left)/r.width)*2 - 1, -((ev.clientY - r.top)/r.height)*2 + 1);
+    ray.setFromCamera(ptr, camera);
+    var p = new THREE.Vector3();
+    if(ray.ray.intersectPlane(dragPlane, p)){
+      var a = drag.asset;
+      a.group.position.x = Math.max(-34, Math.min(34, p.x));
+      a.group.position.z = Math.max(-25, Math.min(25, p.z));
+      paintInspector();
+    }
+  }
+});
+function endDrag(){ drag = null; stageEl.classList.remove('dragging'); }
+canvas.addEventListener('pointerup', endDrag);
+canvas.addEventListener('pointercancel', endDrag);
+canvas.addEventListener('wheel', function(ev){
+  ev.preventDefault();
+  cam.r = Math.max(18, Math.min(140, cam.r*(1 + ev.deltaY*0.0011)));
+}, {passive:false});
+
+function updateHud(){
+  document.getElementById('hudCount').textContent = ASSETS.length;
+  document.getElementById('hudEnv').textContent = ASSETS.filter(function(a){ return a.kind === 'envelope'; }).length;
+  document.getElementById('hudPts').textContent = collected.length;
+}
+
+/* ══════════ loop ring in the cream strip ══════════ */
+var ringCv = document.getElementById('loopring'), rg = ringCv.getContext('2d');
+function drawRing(t){
+  var W = 132, cx = 66, cy = 66, R = 46;
+  rg.clearRect(0, 0, W, W);
+  rg.lineWidth = 5; rg.strokeStyle = 'rgba(20,20,22,.10)';
+  rg.beginPath(); rg.arc(cx, cy, R, 0, 6.2832); rg.stroke();
+  var order = ['sim','deploy','collect','compile'], idx = order.indexOf(stage);
+  rg.lineWidth = 5; rg.strokeStyle = '#8a1fb8'; rg.lineCap = 'round';
+  var a0 = -Math.PI/2 + idx*Math.PI/2, a1 = a0 + Math.PI/2 - 0.22;
+  rg.beginPath(); rg.arc(cx, cy, R, a0, a1); rg.stroke();
+  for(var i=0;i<4;i++){
+    var a = -Math.PI/2 + i*Math.PI/2;
+    rg.beginPath();
+    rg.arc(cx + Math.cos(a)*R, cy + Math.sin(a)*R, i === idx ? 7 : 4.5, 0, 6.2832);
+    rg.fillStyle = i === idx ? '#c53fd6' : '#cfc6ad';
+    rg.fill();
+  }
+  if(loopsClosed){
+    rg.beginPath(); rg.arc(cx, cy, 16, 0, 6.2832);
+    rg.fillStyle = 'rgba(93,143,102,.22)'; rg.fill();
+    rg.fillStyle = '#4d7a55'; rg.font = '16px "Times New Roman", serif';
+    rg.textAlign = 'center'; rg.textBaseline = 'middle';
+    rg.fillText(String(loopsClosed), cx, cy + 1);
+  }
+}
+
+/* ══════════ export ══════════ */
+function download(name, obj){
+  var blob = new Blob([JSON.stringify(obj, null, 2)], {type:'application/json'});
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download = name; a.click();
+  URL.revokeObjectURL(a.href);
+}
+document.getElementById('expWorld').addEventListener('click', function(){
+  download('ete-world-model.json', {
+    claim_generator:'ete-ml/0.2 (world-model workbench)',
+    crs:'EPSG:3857 · local metric',
+    created:new Date().toISOString(),
+    loops_closed:loopsClosed,
+    assets:ASSETS.map(function(a){
+      return {id:a.id, kind:a.kind, class:KINDS[a.kind].cls, grade:a.grade, signed:a.signed,
+        polarity:a.polarity, position:[+a.group.position.x.toFixed(3), +a.group.position.y.toFixed(3), +a.group.position.z.toFixed(3)],
+        half:[+a.half.x.toFixed(3), +a.half.y.toFixed(3), +a.half.z.toFixed(3)],
+        rotation_y:+a.rotY.toFixed(4), clause:a.clause || null, note:a.note || ''};
+    }),
+    collected_poses:collected.length
+  });
+});
+document.getElementById('expChain').addEventListener('click', function(){
+  download('ete-evidence-chain.json', {claim_generator:'ete-ml/0.2', head:chainHead, records:CHAIN});
+});
+document.getElementById('expPng').addEventListener('click', function(){
+  var a = document.createElement('a');
+  a.href = canvas.toDataURL('image/png'); a.download = 'ete-world-model.png'; a.click();
+});
+
+/* ══════════ seed world ══════════ */
+addAsset('infra', {x:0, z:0, half:{x:3.6, y:4.2, z:3.6}});
+addAsset('infra', {x:-11, z:8, half:{x:2.4, y:2.8, z:2.4}});
+addAsset('sensor', {x:9, z:-9});
+addAsset('corridor', {x:0, z:0});
+(function seedEnvelope(){
+  var c = parseMandate(document.getElementById('clause').value);
+  paintIR(c);
+  var a = addAsset('envelope', {half:{x:3.6 + c.distance_m, y:c.height_max_m/2, z:3.6 + c.distance_m},
+    x:0, z:0, polarity:c.polarity,
+    note:T('Compiled from the clause by transparent code. The buffer is an axis-aligned prism in this build.',
+           '由透明代码依条文编译。本构建中缓冲区为轴对齐棱柱。')});
+  a.group.position.y = c.height_max_m/2;
+  a.clause = c;
+  select(a);
+})();
+updateHud();
+
+/* ══════════ render loop ══════════ */
+var lastT = 0;
+function frame(now){
+  requestAnimationFrame(frame);
+  var dt = Math.min(0.05, (now - lastT)/1000); lastT = now;
+
+  var w = canvas.clientWidth, h = canvas.clientHeight;
+  if(w && h && (canvas.width !== Math.floor(w*renderer.getPixelRatio()) || canvas.height !== Math.floor(h*renderer.getPixelRatio()))){
+    renderer.setSize(w, h, false);
+    camera.aspect = w/h; camera.updateProjectionMatrix();
+  }
+
+  if(!reduced && stage !== 'compile') tPath += dt*0.38;
+  var p = agentPos(tPath);
+  agent.position.copy(p);
+  agent.rotation.y = -tPath*0.9;
+  agent.userData.dend.forEach(function(d, i){ d.rotation.x = Math.sin(now/900 + i)*0.16; });
+
+  var res = testMembership(p);
+  var core = agent.userData.core;
+  core.material.color.setHex(res.deontic === 'StructuralHalt' ? 0xc53fd6 : (res.deontic === 'Permitted' ? 0x8f4fc0 : 0x9a9aa0));
+  if(res.deontic !== current.deontic || res.envelope !== current.envelope || res.held !== current.held){
+    current = res; paintVerdict();
+    if(res.deontic !== lastDeontic){
+      lastDeontic = res.deontic;
+      emit('membership-test', {deontic:res.deontic, grade:res.grade, envelope:res.envelope,
+        P:[+p.x.toFixed(3), +p.y.toFixed(3), +p.z.toFixed(3)]});
+    }
+  }
+
+  var ta = trail.geo.attributes.position.array;
+  var i = trail.n % trail.max;
+  ta[i*3] = p.x; ta[i*3+1] = p.y; ta[i*3+2] = p.z;
+  trail.n++;
+  trail.geo.setDrawRange(0, Math.min(trail.n, trail.max));
+  trail.geo.attributes.position.needsUpdate = true;
+
+  if(stage === 'collect'){
+    collectTick += dt;
+    if(collectTick > 0.09){
+      collectTick = 0;
+      pushCollected(p, res.deontic !== 'StructuralHalt');
+      if(collected.length % 20 === 0) paintLoopNote();
+    }
+  }
+
+  placeCamera();
+  drawRing(now/1000);
+  renderer.render(scene, camera);
+}
+requestAnimationFrame(function(n){ lastT = n; frame(n); });
+
+applyLang();
+paintVerdict();
+paintLoopNote();
+
+})();
+</script>
+</body>
+</html>
